@@ -10,6 +10,7 @@ from flask import render_template, request, redirect, url_for, flash, session, a
 from werkzeug.utils import secure_filename
 from forms import UploadForm
 from werkzeug.datastructures import CombinedMultiDict
+from controllers import *
 
 ###
 # Routing for your application.
@@ -53,6 +54,13 @@ def upload():
     return render_template('upload.html',form=form)
 
 
+@app.route('/files')
+def files():
+    if not session.get('logged_in'):
+        abort(401)
+    files = get_uploaded_images()
+    return render_template('files.html', files = files)
+
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     error = None
@@ -74,18 +82,7 @@ def logout():
     return redirect(url_for('home'))
 
 
-###
-# The functions below should be applicable to all Flask apps.
-###
 
-# Flash errors from the form if validation fails
-def flash_errors(form):
-    for field, errors in form.errors.items():
-        for error in errors:
-            flash(u"Error in the %s field - %s" % (
-                getattr(form, field).label.text,
-                error
-), 'danger')
 
 @app.route('/<file_name>.txt')
 def send_text_file(file_name):
